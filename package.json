@@ -1,14 +1,14 @@
 {
   "name": "command-line-blackjack",
   "version": "1.0.0",
-  "description": "A simple command-line Blackjack game with betting system",
+  "description": "A simple command-line Blackjack game with betting and score tracking",
   "main": "blackjack.js",
   "scripts": {
     "start": "node blackjack.js",
-    "test": "echo \"No tests specified\" && exit 1"
+    "play": "node blackjack.js"
   },
   "keywords": ["blackjack", "game", "command-line", "casino"],
-  "author": "Your Name",
+  "author": "Blackjack Game",
   "license": "MIT",
   "engines": {
     "node": ">=12.0.0"
