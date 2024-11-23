@@ -4,69 +4,78 @@ A simple, interactive Blackjack game that runs in your terminal with betting sys
 
 ### Features
 
-- 🎯 Complete Blackjack rules implementation
-- 💰 Betting system with money management
-- 📊 Score tracking and statistics
-- ♠️ Card deck with proper shuffling
-- 🃏 Ace value handling (1 or 11)
-- 🎉 Blackjack payouts (3:2)
-- 🔄 Automatic deck reshuffling
+- 🎯 **Complete Blackjack Rules**: Standard casino-style Blackjack
+- 💰 **Betting System**: Place bets and manage your virtual bankroll
+- 📊 **Score Tracking**: Track wins, losses, ties, and overall score
+- 🃏 **Card Deck**: Properly shuffled 52-card deck
+- 🎮 **Interactive Gameplay**: Hit, stand, and make strategic decisions
+- 📈 **Statistics**: View your game statistics and win rate
 
-### Installation
+### How to Use
 
-1. Make sure you have Node.js installed (version 12 or higher)
-2. Download all the files to a directory
-3. Navigate to the directory in your terminal
+#### Prerequisites
+- Node.js (version 12 or higher) installed on your system
 
-### How to Play
+#### Installation & Setup
 
-1. **Start the game:**
+1. **Save the files**:
+   - Save `blackjack.js` as the main game file
+   - Save `package.json` for project configuration
+
+2. **Run the game**:
    ```bash
    node blackjack.js
    ```
+   
+   Or if you have the package.json file:
+   ```bash
+   npm start
+   ```
 
-2. **Place your bet:** Enter the amount you want to bet when prompted
+#### Game Rules
 
-3. **Gameplay:**
-   - You'll be dealt two cards face up
-   - The dealer gets one card face up and one face down
-   - Choose to **Hit** (H) to get another card
-   - Choose to **Stand** (S) to keep your current hand
-   - Try to get as close to 21 as possible without going over
+- **Objective**: Get closer to 21 than the dealer without going over
+- **Card Values**: 
+  - Number cards: Face value (2-10)
+  - Face cards (Jack, Queen, King): 10 points
+  - Ace: 11 points (or 1 if going over 21)
+- **Blackjack**: Ace + 10-value card = automatic win (pays 3:2)
+- **Dealer Rules**: Must hit on 16 or less, stand on 17 or more
 
-4. **Winning:**
-   - **Blackjack** (Ace + 10-value card): Pays 3:2
-   - **Win**: Double your bet
-   - **Push** (tie): Get your bet back
-   - **Bust** (over 21): Lose your bet
+#### Game Commands
 
-### Game Rules
+During gameplay, you'll be prompted to:
+- **Place bets**: Enter any amount up to your current balance
+- **Hit (H)**: Take another card
+- **Stand (S)**: Keep your current hand and end your turn
 
-- Dealer must hit on 16 and stand on 17
-- Blackjack pays 3:2
-- No insurance, splitting, or doubling down in this version
-- Aces count as 1 or 11 automatically
-- Deck reshuffles when running low on cards
+#### Menu Options
 
-### Files Structure
+1. **Start New Game**: Begin a new Blackjack round
+2. **View Stats**: See your current statistics and performance
+3. **Exit**: Quit the game
 
-- `blackjack.js` - Main game controller and user interface
-- `game.js` - Game logic, deck, and card management
-- `player.js` - Player class with betting and statistics
-- `package.json` - Node.js project configuration
+#### Scoring System
 
-### Commands
+- **Win**: +10 points, double your bet
+- **Loss**: -5 points, lose your bet
+- **Tie**: Bet returned, no points change
+- **Blackjack**: +15 points, 2.5x your bet
 
-- `H` or `hit` - Take another card
-- `S` or `stand` - Keep your current hand
-- `Y` or `yes` - Play another round
-- `N` or `no` - Quit the game
+#### Starting Balance
+You begin with $1000. Manage your bets wisely!
 
-### Tips
+### Tips for Success
 
-- Start with small bets to learn the game
-- The dealer has to follow strict rules (hit on 16, stand on 17)
-- Track your statistics to improve your strategy
-- Remember that Blackjack pays better than regular wins!
+1. **Basic Strategy**: 
+   - Always stand on 17 or higher
+   - Hit on 11 or less
+   - Consider the dealer's visible card when making decisions
 
-Enjoy playing Command Line Blackjack! 🎰
+2. **Bankroll Management**:
+   - Don't bet more than you can afford to lose
+   - Consider betting 5-10% of your total balance per hand
+
+3. **Blackjack Pays 3:2** - Look for those Ace + 10 combinations!
+
+Enjoy the game and good luck at the tables! 🎰
