@@ -30,8 +30,8 @@ class Deck {
         ];
 
         for (let suit of suits) {
-            for (let rank of ranks) {
-                this.cards.push(new Card(suit, rank.rank, rank.value));
+            for (let rankObj of ranks) {
+                this.cards.push(new Card(suit, rankObj.rank, rankObj.value));
             }
         }
         this.shuffle();
@@ -50,31 +50,27 @@ class Deck {
 }
 
 class Player {
-    constructor(name, startingBalance = 1000) {
+    constructor(name, startingChips = 100) {
         this.name = name;
-        this.balance = startingBalance;
+        this.chips = startingChips;
         this.hand = [];
         this.bet = 0;
         this.score = 0;
         this.wins = 0;
         this.losses = 0;
-        this.ties = 0;
     }
 
     placeBet(amount) {
-        if (amount > this.balance) {
-            throw new Error('Insufficient funds');
+        if (amount <= this.chips) {
+            this.bet = amount;
+            this.chips -= amount;
+            return true;
         }
-        this.bet = amount;
-        this.balance -= amount;
+        return false;
     }
 
     addCard(card) {
         this.hand.push(card);
-    }
-
-    clearHand() {
-        this.hand = [];
     }
 
     getHandValue() {
@@ -83,9 +79,7 @@ class Player {
 
         for (let card of this.hand) {
             value += card.value;
-            if (card.rank === 'Ace') {
-                aces++;
-            }
+            if (card.rank === 'Ace') aces++;
         }
 
         while (value > 21 && aces > 0) {
@@ -96,17 +90,14 @@ class Player {
         return value;
     }
 
-    isBusted() {
-        return this.getHandValue() > 21;
-    }
-
-    hasBlackjack() {
-        return this.hand.length === 2 && this.getHandValue() === 21;
+    clearHand() {
+        this.hand = [];
+        this.bet = 0;
     }
 
     win() {
         const winnings = this.bet * 2;
-        this.balance += winnings;
+        this.chips += winnings;
         this.wins++;
         this.score += 10;
         return winnings;
@@ -117,99 +108,72 @@ class Player {
         this.score = Math.max(0, this.score - 5);
     }
 
-    tie() {
-        this.balance += this.bet;
-        this.ties++;
+    push() {
+        this.chips += this.bet;
     }
 
-    blackjack() {
-        const winnings = Math.floor(this.bet * 2.5);
-        this.balance += winnings;
-        this.wins++;
-        this.score += 15;
-        return winnings;
+    hasBlackjack() {
+        return this.hand.length === 2 && this.getHandValue() === 21;
     }
 
-    getStats() {
-        return {
-            name: this.name,
-            balance: this.balance,
-            wins: this.wins,
-            losses: this.losses,
-            ties: this.ties,
-            score: this.score
-        };
+    isBusted() {
+        return this.getHandValue() > 21;
+    }
+
+    displayHand(hideFirstCard = false) {
+        if (hideFirstCard && this.hand.length > 0) {
+            return `[Hidden], ${this.hand.slice(1).map(card => card.toString()).join(', ')}`;
+        }
+        return this.hand.map(card => card.toString()).join(', ');
     }
 }
 
 class BlackjackGame {
     constructor() {
+        this.deck = new Deck();
+        this.player = new Player('Player');
+        this.dealer = new Player('Dealer');
         this.rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
         });
-        this.deck = new Deck();
-        this.player = new Player('Player');
-        this.dealer = new Player('Dealer', Infinity);
-        this.gameActive = false;
-    }
-
-    async start() {
-        console.log('🎰 Welcome to Blackjack! 🎰\n');
-        await this.showMenu();
-    }
-
-    async showMenu() {
-        console.log('\n=== BLACKJACK MENU ===');
-        console.log('1. Start New Game');
-        console.log('2. View Stats');
-        console.log('3. Exit');
-        
-        const choice = await this.askQuestion('Choose an option (1-3): ');
-        
-        switch (choice) {
-            case '1':
-                await this.startGame();
-                break;
-            case '2':
-                this.showStats();
-                await this.showMenu();
-                break;
-            case '3':
-                console.log('Thanks for playing! Goodbye!');
-                this.rl.close();
-                break;
-            default:
-                console.log('Invalid choice. Please try again.');
-                await this.showMenu();
-        }
     }
 
     async startGame() {
-        if (this.player.balance <= 0) {
-            console.log('\n💸 You are out of money! Game over.');
-            this.rl.close();
-            return;
+        console.log('🎰 Welcome to Blackjack! 🎰\n');
+        
+        while (this.player.chips > 0) {
+            await this.playRound();
+            
+            if (this.player.chips === 0) {
+                console.log('\n💸 You\'re out of chips! Game over.');
+                break;
+            }
+
+            const playAgain = await this.askQuestion('Play another round? (y/n): ');
+            if (playAgain.toLowerCase() !== 'y') {
+                break;
+            }
         }
 
-        this.gameActive = true;
-        this.deck.reset();
+        this.displayFinalStats();
+        this.rl.close();
+    }
+
+    async playRound() {
+        console.log(`\n💰 Your chips: $${this.player.chips}`);
+        console.log(`📊 Score: ${this.player.score} | Wins: ${this.player.wins} | Losses: ${this.player.losses}\n`);
+
+        // Place bet
+        const betAmount = await this.getValidBet();
+        this.player.placeBet(betAmount);
+
+        // Reset hands and deck if needed
         this.player.clearHand();
         this.dealer.clearHand();
-
-        console.log(`\n💰 Current Balance: $${this.player.balance}`);
-        
-        // Place bet
-        let betAmount;
-        while (true) {
-            try {
-                const betInput = await this.askQuestion('Enter your bet amount: ');
-                betAmount = parseInt(betInput);
-                this.player.placeBet(betAmount);
-                break;
-            } catch (error) {
-                console.log('Invalid bet amount. Please enter a valid number within your balance.');
-            }
+        if (this.deck.cards.length < 20) {
+            this.deck.reset();
+            console.log('🃏 Shuffling deck...');
         }
 
         // Deal initial cards
@@ -218,120 +182,128 @@ class BlackjackGame {
         this.player.addCard(this.deck.deal());
         this.dealer.addCard(this.deck.deal());
 
-        await this.playPlayerTurn();
-    }
-
-    async playPlayerTurn() {
-        console.log('\n=== YOUR TURN ===');
-        this.showHands(false);
+        this.displayGameState(true);
 
         // Check for blackjack
-        if (this.player.hasBlackjack()) {
-            console.log('\n🎉 BLACKJACK! 🎉');
-            const winnings = this.player.blackjack();
-            console.log(`You won $${winnings}!`);
-            await this.endRound();
+        if (this.player.hasBlackjack() && this.dealer.hasBlackjack()) {
+            console.log('\n🤝 Both have Blackjack! Push!');
+            this.player.push();
+            return;
+        } else if (this.player.hasBlackjack()) {
+            console.log('\n🎯 Blackjack! You win 3:2!');
+            this.player.chips += Math.floor(this.player.bet * 2.5);
+            this.player.wins++;
+            this.player.score += 15;
+            return;
+        } else if (this.dealer.hasBlackjack()) {
+            console.log('\n💔 Dealer has Blackjack! You lose.');
+            this.player.lose();
             return;
         }
 
+        // Player's turn
+        await this.playerTurn();
+
+        // Dealer's turn if player didn't bust
+        if (!this.player.isBusted()) {
+            this.dealerTurn();
+        }
+
+        // Determine winner
+        this.determineWinner();
+    }
+
+    async playerTurn() {
         while (true) {
-            const choice = await this.askQuestion('\nDo you want to (H)it or (S)tand? ').toLowerCase();
+            const choice = await this.askQuestion('\nHit or Stand? (h/s): ');
             
-            if (choice === 'h' || choice === 'hit') {
+            if (choice.toLowerCase() === 'h') {
                 this.player.addCard(this.deck.deal());
-                this.showHands(false);
+                this.displayGameState(true);
                 
                 if (this.player.isBusted()) {
-                    console.log('\n💥 BUST! You went over 21.');
+                    console.log('\n💥 Bust! You lose.');
                     this.player.lose();
-                    await this.endRound();
-                    return;
+                    break;
                 }
-            } else if (choice === 's' || choice === 'stand') {
-                await this.playDealerTurn();
-                return;
+            } else if (choice.toLowerCase() === 's') {
+                break;
             } else {
-                console.log('Invalid choice. Please enter H for Hit or S for Stand.');
+                console.log('Please enter "h" for hit or "s" for stand.');
             }
         }
     }
 
-    async playDealerTurn() {
-        console.log('\n=== DEALER\'S TURN ===');
-        this.showHands(true);
+    dealerTurn() {
+        console.log('\n🃏 Dealer\'s turn...');
+        this.displayGameState(false);
 
         while (this.dealer.getHandValue() < 17) {
             console.log('Dealer hits...');
             this.dealer.addCard(this.deck.deal());
-            this.showHands(true);
-            
-            if (this.dealer.isBusted()) {
-                console.log('\n🎉 DEALER BUSTS! You win!');
-                const winnings = this.player.win();
-                console.log(`You won $${winnings}!`);
-                await this.endRound();
-                return;
-            }
+            this.displayGameState(false);
         }
 
-        this.determineWinner();
+        if (this.dealer.isBusted()) {
+            console.log('\n💥 Dealer busts!');
+        } else {
+            console.log(`\n🃏 Dealer stands with ${this.dealer.getHandValue()}`);
+        }
     }
 
     determineWinner() {
+        if (this.player.isBusted()) {
+            return; // Player already lost
+        }
+
         const playerValue = this.player.getHandValue();
         const dealerValue = this.dealer.getHandValue();
 
-        console.log(`\n=== FINAL RESULT ===`);
-        console.log(`Your hand: ${playerValue}`);
-        console.log(`Dealer's hand: ${dealerValue}`);
+        console.log(`\n📊 Final Scores:`);
+        console.log(`You: ${playerValue} | Dealer: ${dealerValue}`);
 
-        if (playerValue > dealerValue) {
-            console.log('🎉 YOU WIN!');
+        if (this.dealer.isBusted() || playerValue > dealerValue) {
             const winnings = this.player.win();
-            console.log(`You won $${winnings}!`);
+            console.log(`🎉 You win $${winnings}!`);
         } else if (playerValue < dealerValue) {
-            console.log('😞 DEALER WINS!');
+            console.log('💔 Dealer wins!');
             this.player.lose();
         } else {
-            console.log('🤝 IT\'S A TIE!');
-            this.player.tie();
-        }
-
-        this.endRound();
-    }
-
-    showHands(showDealerFullHand) {
-        console.log(`\nYour hand (${this.player.getHandValue()}):`);
-        this.player.hand.forEach(card => console.log(`  ${card.toString()}`));
-        
-        console.log(`\nDealer's hand${showDealerFullHand ? ` (${this.dealer.getHandValue()})` : ''}:`);
-        if (showDealerFullHand) {
-            this.dealer.hand.forEach(card => console.log(`  ${card.toString()}`));
-        } else {
-            console.log(`  ${this.dealer.hand[0].toString()}`);
-            console.log('  [Hidden Card]');
+            console.log('🤝 Push! Bet returned.');
+            this.player.push();
         }
     }
 
-    showStats() {
-        const stats = this.player.getStats();
-        console.log('\n=== PLAYER STATISTICS ===');
-        console.log(`Player: ${stats.name}`);
-        console.log(`Balance: $${stats.balance}`);
-        console.log(`Score: ${stats.score}`);
-        console.log(`Record: ${stats.wins}-${stats.losses}-${stats.ties}`);
-        console.log(`Win Rate: ${stats.wins + stats.losses > 0 ? Math.round((stats.wins / (stats.wins + stats.losses)) * 100) : 0}%`);
+    displayGameState(hideDealerCard) {
+        console.log('\n' + '='.repeat(50));
+        console.log(`Your hand: ${this.player.displayHand()} (${this.player.getHandValue()})`);
+        console.log(`Dealer's hand: ${this.dealer.displayHand(hideDealerCard)}`);
+        if (!hideDealerCard) {
+            console.log(`Dealer total: ${this.dealer.getHandValue()}`);
+        }
+        console.log('='.repeat(50));
     }
 
-    async endRound() {
-        this.gameActive = false;
-        const continuePlaying = await this.askQuestion('\nDo you want to play another round? (Y/N): ').toLowerCase();
-        
-        if (continuePlaying === 'y' || continuePlaying === 'yes') {
-            await this.startGame();
-        } else {
-            this.showStats();
-            await this.showMenu();
+    displayFinalStats() {
+        console.log('\n' + '⭐'.repeat(50));
+        console.log('FINAL STATISTICS:');
+        console.log(`Final Chip Count: $${this.player.chips}`);
+        console.log(`Final Score: ${this.player.score}`);
+        console.log(`Total Wins: ${this.player.wins}`);
+        console.log(`Total Losses: ${this.player.losses}`);
+        console.log('⭐'.repeat(50));
+    }
+
+    async getValidBet() {
+        while (true) {
+            const betInput = await this.askQuestion(`Place your bet (1-${this.player.chips}): `);
+            const betAmount = parseInt(betInput);
+            
+            if (isNaN(betAmount) || betAmount < 1 || betAmount > this.player.chips) {
+                console.log(`Please enter a valid bet between 1 and ${this.player.chips}.`);
+            } else {
+                return betAmount;
+            }
         }
     }
 
@@ -344,4 +316,4 @@ class BlackjackGame {
 
 // Start the game
 const game = new BlackjackGame();
-game.start();
+game.startGame();
