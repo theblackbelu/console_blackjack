@@ -1,81 +1,95 @@
-## Command Line Blackjack Game
+## Command-Line Blackjack Game
 
 A simple, interactive Blackjack game that runs in your terminal with betting system and score tracking.
 
 ### Features
 
-- 🎯 **Complete Blackjack Rules**: Standard casino-style Blackjack
-- 💰 **Betting System**: Place bets and manage your virtual bankroll
-- 📊 **Score Tracking**: Track wins, losses, ties, and overall score
+- 🎯 **Complete Blackjack Rules**: Standard Blackjack gameplay
+- 💰 **Betting System**: Place bets and manage your chip stack
+- 📊 **Score Tracking**: Track wins, losses, and overall score
 - 🃏 **Card Deck**: Properly shuffled 52-card deck
-- 🎮 **Interactive Gameplay**: Hit, stand, and make strategic decisions
-- 📈 **Statistics**: View your game statistics and win rate
+- 🎮 **Interactive Gameplay**: Hit, stand, and make decisions
+- 📈 **Statistics**: View your performance over time
 
-### How to Use
+### Prerequisites
 
-#### Prerequisites
-- Node.js (version 12 or higher) installed on your system
+- Node.js (version 12 or higher)
 
-#### Installation & Setup
+### Installation & Setup
 
-1. **Save the files**:
-   - Save `blackjack.js` as the main game file
-   - Save `package.json` for project configuration
+1. **Download the files**:
+   - Save `blackjack.js` and `package.json` in the same directory
 
 2. **Run the game**:
    ```bash
    node blackjack.js
    ```
-   
-   Or if you have the package.json file:
+
+   Or if you want to use npm:
    ```bash
    npm start
    ```
 
-#### Game Rules
+### How to Play
 
-- **Objective**: Get closer to 21 than the dealer without going over
-- **Card Values**: 
-  - Number cards: Face value (2-10)
-  - Face cards (Jack, Queen, King): 10 points
-  - Ace: 11 points (or 1 if going over 21)
-- **Blackjack**: Ace + 10-value card = automatic win (pays 3:2)
-- **Dealer Rules**: Must hit on 16 or less, stand on 17 or more
+1. **Starting the Game**:
+   - You begin with $100 in chips
+   - Each round, place your bet (1 to your current chip amount)
 
-#### Game Commands
+2. **Game Flow**:
+   - You and the dealer are dealt 2 cards each
+   - Your cards are visible, dealer shows one card face down
+   - Choose to **Hit** (take another card) or **Stand** (keep current hand)
+   - Try to get as close to 21 without going over
+   - Dealer must hit until they reach 17 or higher
 
-During gameplay, you'll be prompted to:
-- **Place bets**: Enter any amount up to your current balance
-- **Hit (H)**: Take another card
-- **Stand (S)**: Keep your current hand and end your turn
+3. **Winning Conditions**:
+   - **Blackjack** (Ace + 10-value card): 3:2 payout
+   - **Win**: Double your bet
+   - **Push** (tie): Bet returned
+   - **Lose**: Lose your bet
 
-#### Menu Options
+4. **Scoring System**:
+   - Win: +10 points
+   - Blackjack: +15 points
+   - Loss: -5 points
+   - Maintain minimum score of 0
 
-1. **Start New Game**: Begin a new Blackjack round
-2. **View Stats**: See your current statistics and performance
-3. **Exit**: Quit the game
+### Game Commands
 
-#### Scoring System
+During gameplay, you'll be prompted to enter:
+- **Bet amount**: Number between 1 and your current chips
+- **Hit or Stand**: 'h' to hit, 's' to stand
+- **Play again**: 'y' to continue, 'n' to quit
 
-- **Win**: +10 points, double your bet
-- **Loss**: -5 points, lose your bet
-- **Tie**: Bet returned, no points change
-- **Blackjack**: +15 points, 2.5x your bet
+### Card Values
 
-#### Starting Balance
-You begin with $1000. Manage your bets wisely!
+- Number cards: Face value (2-10)
+- Face cards (Jack, Queen, King): 10 points
+- Ace: 11 points (or 1 if needed to avoid busting)
 
-### Tips for Success
+### Game Features
 
-1. **Basic Strategy**: 
-   - Always stand on 17 or higher
-   - Hit on 11 or less
-   - Consider the dealer's visible card when making decisions
+- **Automatic deck shuffling** when cards run low
+- **Chip management** with betting limits
+- **Statistics tracking** (wins, losses, score)
+- **Proper Blackjack rules** including dealer hitting rules
+- **Clear game state display** after each action
 
-2. **Bankroll Management**:
-   - Don't bet more than you can afford to lose
-   - Consider betting 5-10% of your total balance per hand
+### Tips
 
-3. **Blackjack Pays 3:2** - Look for those Ace + 10 combinations!
+- Start with smaller bets to learn the game
+- Remember the dealer must hit on 16 or lower
+- Blackjack pays better than regular wins
+- Track your score to improve your strategy
 
-Enjoy the game and good luck at the tables! 🎰
+### Exiting the Game
+
+The game automatically ends when:
+- You choose not to play another round
+- You run out of chips
+- You press Ctrl+C
+
+Final statistics are displayed when the game ends.
+
+Enjoy playing Blackjack! 🎰
